@@ -1,25 +1,62 @@
-import logo from './logo.svg';
 import './App.css';
+import React, { createContext, useContext, useReducer } from 'react';
 
-function App() {
+
+const initialState = {
+  count1: 0,
+  count2: 0,
+};
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'INCREMENT':
+      return {
+        ...state,
+        [action.name]: state[action.name] + 1,
+      };
+    case 'DECREMENT':
+      return {
+        ...state,
+        [action.name]: state[action.name] - 1, 
+      };
+      default:
+        return state;
+  }
+};
+
+const useValue = () => useReducer(reducer, initialState);
+
+const Context = createContext(null);
+
+const useGlobalState = () => {
+  const value = useContext(Context);
+  if (value === null) throw new Error('Please add GlobalStateProvider');
+  return value;
+};
+
+const GlobalStateProvider = ({ children }) => (
+  <Context.Provider value={useValue()}>{children}</Context.Provider>
+);
+
+const Counter = ({ name }) => {
+  const [state, dispatch] = useGlobalState();
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      {state[name]}
+      <button onClick={() => dispatch({ type: 'INCREMENT', name })}>+</button>
+      <button onClick={() => dispatch({ type: 'DECREMENT', name })}>-</button>
     </div>
-  );
+  )
 }
+
+const App = () => (
+  <GlobalStateProvider>
+    <h1>Count1</h1>
+    <Counter name="count1" />
+    <h1>Count2</h1>
+    <Counter name="count2" />
+  </GlobalStateProvider>
+);
+
 
 export default App;
